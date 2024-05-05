@@ -1,9 +1,10 @@
 {
-  "name": "evaluator-service",
+  "name": "algocode-evaluator-service",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prebuild": "npx eslint . --fix",
     "build": "npx tsc",
     "watch": "npx tsc -w",
     "prestart": "npm run build",
@@ -15,12 +16,19 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "eslint-plugin-simple-import-sort": "^12.1.0",
     "nodemon": "^3.1.0",
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@types/ioredis": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.7.1",
+    "@typescript-eslint/parser": "^7.7.1",
+    "bullmq": "^5.7.8",
     "concurrently": "^8.2.2",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "eslint": "^8.57.0",
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1"
   }
 }
