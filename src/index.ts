@@ -3,7 +3,7 @@ import express, { Express } from "express";
 
 import bullBoardAdapter from "./config/bullBoardConfig";
 import serverConfig from "./config/serverConfig";
-import sampleQueueProducer from "./producers/sampleQueueProducer";
+import runPython from './containers/runPythonDocker';
 import apiRouter from './routes';
 import SampleWorker from "./workers/sampleWorker";
 
@@ -20,10 +20,9 @@ app.listen(serverConfig.PORT, () => {
   console.log(`Server started at PORT:${serverConfig.PORT}`);
   console.log(`BullBoard dashboard running on: http://localhost:${serverConfig.PORT}/bulldashboard`);
   SampleWorker('SampleQueue');
+  
+  const code = `firstName = input()\nlastName = input()\nprint("firstName: ", firstName)\nprint("LastName: ", lastName)`;
+  const inputCase = `Nishant\nDongre`;
 
-  sampleQueueProducer('SampleJob', {
-    firstName: "Nishant",
-    lastName: "Dongre",
-    DOB: "May 19, 2001"
-  });
+  runPython(code, inputCase);
 });
