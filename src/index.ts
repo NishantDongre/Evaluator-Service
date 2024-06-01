@@ -3,9 +3,8 @@ import express, { Express } from "express";
 
 import bullBoardAdapter from "./config/bullBoardConfig";
 import serverConfig from "./config/serverConfig";
-import runPython from './containers/runPythonDocker';
+import runJava from './containers/runJavaDocker';
 import apiRouter from './routes';
-import SampleWorker from "./workers/sampleWorker";
 
 const app: Express = express();
 
@@ -19,10 +18,10 @@ app.use('/bulldashboard', bullBoardAdapter.getRouter());
 app.listen(serverConfig.PORT, () => {
   console.log(`Server started at PORT:${serverConfig.PORT}`);
   console.log(`BullBoard dashboard running on: http://localhost:${serverConfig.PORT}/bulldashboard`);
-  SampleWorker('SampleQueue');
+  // SampleWorker('SampleQueue');
   
-  const code = `firstName = input()\nlastName = input()\nprint("firstName: ", firstName)\nprint("LastName: ", lastName)`;
+  const code = `import java.util.Scanner;public class Main {public static void main(String[] args) {Scanner scanner = new Scanner(System.in);String firstName = scanner.nextLine();String lastName = scanner.nextLine();System.out.println("firstName: " + firstName);System.out.println("LastName: " + lastName);scanner.close();}}`;
   const inputCase = `Nishant\nDongre`;
-
-  runPython(code, inputCase);
+  
+  runJava(code, inputCase);
 });
