@@ -3,7 +3,7 @@ import express, { Express } from "express";
 
 import bullBoardAdapter from "./config/bullBoardConfig";
 import serverConfig from "./config/serverConfig";
-import runJava from './containers/runJavaDocker';
+import runCpp from './containers/runCpp';
 import apiRouter from './routes';
 
 const app: Express = express();
@@ -20,8 +20,36 @@ app.listen(serverConfig.PORT, () => {
   console.log(`BullBoard dashboard running on: http://localhost:${serverConfig.PORT}/bulldashboard`);
   // SampleWorker('SampleQueue');
   
-  const code = `import java.util.Scanner;public class Main {public static void main(String[] args) {Scanner scanner = new Scanner(System.in);String firstName = scanner.nextLine();String lastName = scanner.nextLine();System.out.println("firstName: " + firstName);System.out.println("LastName: " + lastName);scanner.close();}}`;
-  const inputCase = `Nishant\nDongre`;
+const userCode = `
   
-  runJava(code, inputCase);
+    class Solution {
+      public:
+      vector<int> permute() {
+          vector<int> v;
+          v.push_back(10);
+          return v;
+      }
+    };
+  `;
+
+  const code = `
+  #include<iostream>
+  #include<vector>
+  #include<stdio.h>
+  using namespace std;
+  
+  ${userCode}
+  int main() {
+    Solution s;
+    vector<int> result = s.permute();
+    for(int x : result) {
+      cout<<x<<" ";
+    }
+    cout<<endl;
+    return 0;
+  }
+  `;
+  const inputCase = `10`;
+  
+  runCpp(code, inputCase);
 });
