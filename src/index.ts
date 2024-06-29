@@ -1,10 +1,13 @@
-import bodyParser from 'body-parser';
+import bodyParser from "body-parser";
 import express, { Express } from "express";
 
 import bullBoardAdapter from "./config/bullBoardConfig";
 import serverConfig from "./config/serverConfig";
-import runCpp from './containers/runCpp';
-import apiRouter from './routes';
+import submissionQueueProducer from "./producers/submissionQueueProducer";
+// import runCpp from './containers/runCpp';
+import apiRouter from "./routes";
+import { submission_queue } from "./utils/constants";
+import submissionWorker from "./workers/submissionWorker";
 
 const app: Express = express();
 
@@ -12,27 +15,37 @@ app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
 app.use(bodyParser.text());
 
-app.use('/api', apiRouter);
-app.use('/bulldashboard', bullBoardAdapter.getRouter());
+app.use("/api", apiRouter);
+app.use("/bulldashboard", bullBoardAdapter.getRouter());
 
 app.listen(serverConfig.PORT, () => {
-  console.log(`Server started at PORT:${serverConfig.PORT}`);
-  console.log(`BullBoard dashboard running on: http://localhost:${serverConfig.PORT}/bulldashboard`);
-  // SampleWorker('SampleQueue');
-  
-const userCode = `
+    console.log(`Server started at PORT:${serverConfig.PORT}`);
+    console.log(
+        `BullBoard dashboard running on: http://localhost:${serverConfig.PORT}/bulldashboard`
+    );
+    //  sampleWorker('SampleQueue');
+
+    //   sampleQueueProducer('SampleJob', {
+    //     firstName: "Nishant",
+    //     lastName: "Dongre",
+    //     DOB: "May 19, 2001"
+    //   });
+
+    const userCode = `
   
     class Solution {
       public:
       vector<int> permute() {
           vector<int> v;
-          v.push_back(10);
+          int num = 1;
+          cin>>num; 
+          v.push_back(num);
           return v;
       }
     };
   `;
 
-  const code = `
+    const code = `
   #include<iostream>
   #include<vector>
   #include<stdio.h>
@@ -49,7 +62,14 @@ const userCode = `
     return 0;
   }
   `;
-  const inputCase = `10`;
-  
-  runCpp(code, inputCase);
+    const inputCase = `10`;
+
+      // runCpp(code, inputCase);
+
+    submissionWorker(submission_queue);
+    submissionQueueProducer("SubmissionJob",{"1234": {
+      language: "CPP",
+      inputCase,
+      code 
+    }});
 });
