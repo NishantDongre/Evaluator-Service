@@ -4,7 +4,6 @@ import express, { Express } from "express";
 import bullBoardAdapter from "./config/bullBoardConfig";
 import serverConfig from "./config/serverConfig";
 import submissionQueueProducer from "./producers/submissionQueueProducer";
-// import runCpp from './containers/runCpp';
 import apiRouter from "./routes";
 import { submission_queue } from "./utils/constants";
 import submissionWorker from "./workers/submissionWorker";
@@ -32,44 +31,45 @@ app.listen(serverConfig.PORT, () => {
     //   });
 
     const userCode = `
-  
-    class Solution {
-      public:
-      vector<int> permute() {
-          vector<int> v;
-          int num = 1;
-          cin>>num; 
-          v.push_back(num);
-          return v;
-      }
-    };
-  `;
+      class Solution {
+        public:
+          vector<int> permute() {
+              vector<int> v;
+              int num = 1;
+              cin>>num; 
+              v.push_back(num);
+              return v;
+          }
+      };
+    `;
 
     const code = `
-  #include<iostream>
-  #include<vector>
-  #include<stdio.h>
-  using namespace std;
+      #include<iostream>
+      #include<vector>
+      #include<stdio.h>
+      using namespace std;
   
-  ${userCode}
-  int main() {
-    Solution s;
-    vector<int> result = s.permute();
-    for(int x : result) {
-      cout<<x<<" ";
-    }
-    cout<<endl;
-    return 0;
-  }
-  `;
+      ${userCode}
+
+      int main() {
+        Solution s;
+        vector<int> result = s.permute();
+        for(int x : result) {
+          cout<<x<<" ";
+        }
+        cout<<endl;
+        return 0;
+      }
+    `;
+
     const inputCase = `10`;
 
-      // runCpp(code, inputCase);
-
     submissionWorker(submission_queue);
-    submissionQueueProducer("SubmissionJob",{"1234": {
-      language: "CPP",
-      inputCase,
-      code 
-    }});
+    submissionQueueProducer("SubmissionJob", {
+        "1234": {
+            language: "CPP",
+            inputCase,
+            code,
+        },
+    });
 });
