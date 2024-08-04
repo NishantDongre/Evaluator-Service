@@ -3,7 +3,6 @@ import express, { Express } from "express";
 
 import bullBoardAdapter from "./config/bullBoardConfig";
 import serverConfig from "./config/serverConfig";
-import submissionQueueProducer from "./producers/submissionQueueProducer";
 import apiRouter from "./routes";
 import { submission_queue } from "./utils/constants";
 import submissionWorker from "./workers/submissionWorker";
@@ -22,54 +21,121 @@ app.listen(serverConfig.PORT, () => {
     console.log(
         `BullBoard dashboard running on: http://localhost:${serverConfig.PORT}/bulldashboard`
     );
+    // Sample Queue Testing
     //  sampleWorker('SampleQueue');
-
     //   sampleQueueProducer('SampleJob', {
     //     firstName: "Nishant",
     //     lastName: "Dongre",
     //     DOB: "May 19, 2001"
     //   });
 
-    const userCode = `
-      class Solution {
-        public:
-          vector<int> permute() {
-              vector<int> v;
-              int num = 1;
-              cin>>num; 
-              v.push_back(num);
-              return v;
-          }
-      };
-    `;
+    // Submission Queue Testing
 
-    const code = `
-      #include<iostream>
-      #include<vector>
-      #include<stdio.h>
-      using namespace std;
-  
-      ${userCode}
+    // Cpp Code
+    // const userCode = `
+    //   class Solution {
+    //     public:
+    //       int square(int n) {
+    //           return n * n;
+    //       }
+    //   };
+    // `;
 
-      int main() {
-        Solution s;
-        vector<int> result = s.permute();
-        for(int x : result) {
-          cout<<x<<" ";
-        }
-        cout<<endl;
-        return 0;
-      }
-    `;
+    // const code = `
+    //   #include<iostream>
+    //   #include<vector>
+    //   #include<stdio.h>
+    //   using namespace std;
 
-    const inputCase = `10`;
+    //   ${userCode}
+
+    // int main() {
+    //   int n;
+    //   cin>>n;
+
+    //   Solution *obj = new Solution();
+
+    //   for(int i=0;i<n;i++){
+    //       int num;
+    //       cin>>num;
+    //       cout<<obj->square(num)<<endl;
+    //   }
+
+    //   return 0;
+    // }
+    // `;
+
+    // const inputCase = `10 1 2 3 4 5 6 7 8 9 10`;
+
+    // submissionWorker(submission_queue);
+    // console.log("[index.ts] calling submissionQueueProducer");
+    // submissionQueueProducer("SubmissionJob", {
+    //     "1234": {
+    //         language: "CPP",
+    //         inputCase,
+    //         code,
+    //     },
+    // });
+
+    // Java Code
+    //     const userCode = `
+    //       class Solution {
+    //           public int square(int n) {
+    //               return n * n;
+    //         }
+    //       }
+    //     `;
+
+    //     const code = `
+    //         import java.util.Scanner;
+
+    //         ${userCode}
+
+    //         public class Main {
+    //             public static void main(String[] args) {
+    //                 Scanner scanner = new Scanner(System.in);
+    //                 int n = scanner.nextInt();
+
+    //                 Solution obj = new Solution();
+
+    //                 for (int i = 0; i < n; i++) {
+    //                     int num = scanner.nextInt();
+    //                     System.out.println(obj.square(num));
+    //                 }
+
+    //                 scanner.close();
+    //             }
+    //         }
+    //     `;
+
+    //     const inputCase = `10 1 2 3 4 5 6 7 8 9 10`;
+
+    //     submissionWorker(submission_queue);
+    //     console.log("[index.ts] calling submissionQueueProducer");
+    //     submissionQueueProducer("SubmissionJob", {
+    //         "1234": {
+    //             language: "JAVA",
+    //             inputCase,
+    //             code,
+    //         },
+    //     });
+
+    // Python Code
+    // const userCode =
+    //     "class Solution:\n    def square(self, n):\n        return n * n";
+    // const code = `${userCode}\ndef main():\n    n = int(input())\n    solObj = Solution()\n    for i in range(n):\n        num = int(input())\n        print(solObj.square(num))\n\nif __name__ == "__main__":\n    main()`;
+
+    // const inputCase = `10\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10`;
+
+    // submissionWorker(submission_queue);
+    // console.log("[index.ts] calling submissionQueueProducer");
+    // submissionQueueProducer("SubmissionJob", {
+    //     "1234": {
+    //         language: "PYTHON",
+    //         inputCase,
+    //         code,
+    //     },
+    // });
 
     submissionWorker(submission_queue);
-    submissionQueueProducer("SubmissionJob", {
-        "1234": {
-            language: "CPP",
-            inputCase,
-            code,
-        },
-    });
 });

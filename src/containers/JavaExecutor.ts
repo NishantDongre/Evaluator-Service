@@ -1,23 +1,42 @@
 // import Docker from 'dockerode';
 
 // import { TestCases } from '../types/testCases';
-import CodeExecutorStrategy, { ExecutionResponse } from "../types/codeExecutorStrategy";
+import CodeExecutorStrategy, {
+    ExecutionResponse,
+} from "../types/codeExecutorStrategy";
 import { JAVA_IMAGE } from "../utils/constants";
 import createContainer from "./containerFactory";
 import decodeDockerStream from "./dockerHelper";
 import pullImage from "./pullImage";
 
 class JavaExecutor implements CodeExecutorStrategy {
-    async execute(code: string, inputTestCase: string): Promise<ExecutionResponse> {
+    async execute(
+        code: string,
+        inputTestCase: string,
+        outputTestCase: string
+    ): Promise<ExecutionResponse> {
+        console.log("[JavaExecutor.ts] Java executor called");
+        console.log("[JavaExecutor.ts] Code: ", code);
+        console.log("[JavaExecutor.ts] inputTestCase: ", inputTestCase);
+        console.log("[JavaExecutor.ts] outputTestCase: ", outputTestCase);
 
         const rawLogBuffer: Buffer[] = [];
 
         await pullImage(JAVA_IMAGE);
 
-        console.log("Initialising a new java docker container");
-        const runCommand = `echo '${code.replace(/'/g, `'\\"`)}' > Main.java && javac Main.java && echo '${inputTestCase.replace(/'/g, `'\\"`)}' | java Main`;
-        console.log(runCommand);
+        const runCommand = `echo '${code.replace(
+            /'/g,
+            `'\\"`
+        )}' > Main.java && javac Main.java && echo '${inputTestCase.replace(
+            /'/g,
+            `'\\"`
+        )}' | java Main`;
 
+        console.log("[JavaExecutor.ts] runCommand: ", runCommand);
+
+        console.log(
+            "[JavaExecutor.ts] Initialising a new Java docker container"
+        );
         const javaDockerContainer = await createContainer(JAVA_IMAGE, [
             "/bin/sh",
             "-c",
@@ -25,10 +44,10 @@ class JavaExecutor implements CodeExecutorStrategy {
         ]);
 
         // starting / booting the corresponding docker container
+        console.log("[JavaExecutor.ts] Starting a new Java docker container");
         await javaDockerContainer.start();
 
-        console.log("Started the docker container");
-
+        console.log("[JavaExecutor.ts] Started the docker container");
         const loggerStream = await javaDockerContainer.logs({
             stdout: true,
             stderr: true,
@@ -42,7 +61,10 @@ class JavaExecutor implements CodeExecutorStrategy {
         });
 
         try {
-            const codeResponse: string = await this.fetchDecodedStream(loggerStream, rawLogBuffer);
+            const codeResponse: string = await this.fetchDecodedStream(
+                loggerStream,
+                rawLogBuffer
+            );
             return { output: codeResponse, status: "COMPLETED" };
         } catch (error) {
             return { output: error as string, status: "ERROR" };
@@ -52,25 +74,25 @@ class JavaExecutor implements CodeExecutorStrategy {
         }
     }
 
-    fetchDecodedStream(loggerStream: NodeJS.ReadableStream, rawLogBuffer: Buffer[]) : Promise<string> {
+    fetchDecodedStream(
+        loggerStream: NodeJS.ReadableStream,
+        rawLogBuffer: Buffer[]
+    ): Promise<string> {
         return new Promise((res, rej) => {
-
             loggerStream.on("end", () => {
+                console.log("[JavaExecutor.ts] rawLogBuffer:", rawLogBuffer);
 
-                console.log(rawLogBuffer);
-                
                 const completeBuffer = Buffer.concat(rawLogBuffer);
                 const decodedStream = decodeDockerStream(completeBuffer);
-                
-                console.log(decodedStream);
-                console.log(decodedStream.stdout);
+
+                console.log("[JavaExecutor.ts] decodedStream: ", decodedStream);
+                // console.log(decodedStream.stdout);
 
                 if (decodedStream.stderr) {
                     rej(decodedStream.stderr);
                 } else {
                     res(decodedStream.stdout);
                 }
-                
             });
         });
     }

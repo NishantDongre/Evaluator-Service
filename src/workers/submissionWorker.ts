@@ -5,19 +5,23 @@ import SubmissionJob from "../jobs/SubmissionJob";
 
 export default function submissionWorker(queueName: string) {
     new Worker(
-        queueName, 
+        queueName,
         async (job: Job) => {
-            console.log("SubmissionJob job worker kicking", job);
-            if(job.name === "SubmissionJob") {
+            console.log(
+                "[submissionWorker.ts] SubmissionJob job worker kicking -> Job: ",
+                job
+            );
+            if (job.name === "SubmissionJob") {
                 const submissionJobInstance = new SubmissionJob(job.data);
 
+                console.log("[submissionWorker.ts] Calling job handler");
                 submissionJobInstance.handle(job);
 
                 return true;
             }
         },
         {
-            connection: redisConnection
+            connection: redisConnection,
         }
     );
 }
