@@ -1,9 +1,10 @@
 interface CodeExecutorStrategy {
     execute(
         code: string,
-        inputTestCase: string,
-        outputTestCase: string
-    ): Promise<ExecutionResponse>;
+        testCases: { input: string; output: string }[],
+        timeLimit: number,
+        isCustomTestCase: boolean,
+    ): Promise<ExecutionResponse[]>;
 }
-export type ExecutionResponse = { output: string; status: string };
+export type ExecutionResponse = { input: string, output: string, expected: string, status: string, type: string };
 export default CodeExecutorStrategy;

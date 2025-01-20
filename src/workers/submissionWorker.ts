@@ -8,13 +8,12 @@ export default function submissionWorker(queueName: string) {
         queueName,
         async (job: Job) => {
             console.log(
-                "[submissionWorker.ts] SubmissionJob job worker kicking -> Job: ",
-                job
+                "[submissionWorker.ts] SubmissionJob job worker kicking"
             );
             if (job.name === "SubmissionJob") {
                 const submissionJobInstance = new SubmissionJob(job.data);
 
-                console.log("[submissionWorker.ts] Calling job handler");
+                console.log("[submissionWorker.ts] Calling job  handler");
                 submissionJobInstance.handle(job);
 
                 return true;
