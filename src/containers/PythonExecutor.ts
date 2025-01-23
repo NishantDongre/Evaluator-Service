@@ -1,10 +1,8 @@
+import genericContainerPool from "../initializePool";
 import CodeExecutorStrategy, {
   ExecutionResponse,
 } from "../types/codeExecutorStrategy";
-import { PYTHON_IMAGE } from "../utils/constants";
-import createContainer from "./containerFactory";
 import decodeDockerStream from "./dockerHelper";
-import pullImage from "./pullImage";
 
 class PythonExecutor implements CodeExecutorStrategy {
   async execute(
@@ -15,20 +13,9 @@ class PythonExecutor implements CodeExecutorStrategy {
   ): Promise<ExecutionResponse[]> {
     console.log("[PythonExecutor.ts] Python executor called");
 
-    await pullImage(PYTHON_IMAGE);
-
-    // Start the container with a keep-alive command to prevent it from stopping
-    const keepAliveCommand = ["/bin/sh", "-c", "while :; do sleep 1; done"];
-    const pythonDockerContainer = await createContainer(
-      PYTHON_IMAGE,
-      keepAliveCommand
-    );
-
-    // Start the container and keep it alive
-    console.log(
-      "[PythonExecutor.ts] Starting the docker container with keep-alive command"
-    );
-    await pythonDockerContainer.start();
+    // Acquire a CPP container from the pool
+    const pythonDockerContainer =
+      await genericContainerPool.cppContainerPool.acquire();
 
     try {
       // Compile the code inside the running container
@@ -157,13 +144,9 @@ class PythonExecutor implements CodeExecutorStrategy {
         },
       ];
     } finally {
-      // Stop the container before removing it
-      console.log("[PythonExecutor.ts] Stopping the docker container");
-      await pythonDockerContainer.stop();
-
-      // Remove the container after stopping it
-      console.log("[PythonExecutor.ts] Removing the docker container");
-      await pythonDockerContainer.remove();
+      // Release the container
+      console.log("[Pythonxecutor.ts] Releasing the PYTHON docker container");
+      genericContainerPool.cppContainerPool.release(pythonDockerContainer);
     }
   }
 

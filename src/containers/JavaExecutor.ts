@@ -1,10 +1,8 @@
+import genericContainerPool from "../initializePool";
 import CodeExecutorStrategy, {
   ExecutionResponse,
 } from "../types/codeExecutorStrategy";
-import { JAVA_IMAGE } from "../utils/constants";
-import createContainer from "./containerFactory";
 import decodeDockerStream from "./dockerHelper";
-import pullImage from "./pullImage";
 
 class JavaExecutor implements CodeExecutorStrategy {
   async execute(
@@ -15,20 +13,8 @@ class JavaExecutor implements CodeExecutorStrategy {
   ): Promise<ExecutionResponse[]> {
     console.log("[JavaExecutor.ts] Java executor called");
 
-    await pullImage(JAVA_IMAGE);
-
-    // Start the container with a keep-alive command to prevent it from stopping
-    const keepAliveCommand = ["/bin/sh", "-c", "while :; do sleep 1; done"];
-    const javaDockerContainer = await createContainer(
-      JAVA_IMAGE,
-      keepAliveCommand
-    );
-
-    // Start the container and keep it alive
-    console.log(
-      "[JavaExecutor.ts] Starting the docker container with keep-alive command"
-    );
-    await javaDockerContainer.start();
+    // Acquire a JAVA container from the pool
+    const javaDockerContainer = await genericContainerPool.javaContainerPool.acquire();
 
     try {
       // Compile the code inside the running container
@@ -161,13 +147,9 @@ class JavaExecutor implements CodeExecutorStrategy {
         },
       ];
     } finally {
-      // Stop the container before removing it
-      console.log("[Javaxecutor.ts] Stopping the docker container");
-      await javaDockerContainer.stop();
-
-      // Remove the container after stopping it
-      console.log("[Javaxecutor.ts] Removing the docker container");
-      await javaDockerContainer.remove();
+      // Release the container
+      console.log("[Javaxecutor.ts] Releasing the JAVA docker container");
+      genericContainerPool.javaContainerPool.release(javaDockerContainer);
     }
   }
 

@@ -1,8 +1,10 @@
 import bodyParser from "body-parser";
 import express, { Express } from "express";
 
+import cleanUpDockerContainers from "./cleanupDockerContainers";
 import bullBoardAdapter from "./config/bullBoardConfig";
 import serverConfig from "./config/serverConfig";
+import { initializePool } from "./initializePool";
 import apiRouter from "./routes";
 import { submission_queue } from "./utils/constants";
 import submissionWorker from "./workers/submissionWorker";
@@ -17,125 +19,151 @@ app.use("/api", apiRouter);
 app.use("/bulldashboard", bullBoardAdapter.getRouter());
 
 app.listen(serverConfig.PORT, () => {
-    console.log(`Server started at PORT:${serverConfig.PORT}`);
-    console.log(
-        `BullBoard dashboard running on: http://localhost:${serverConfig.PORT}/bulldashboard`
-    );
-    // Sample Queue Testing
-    //  sampleWorker('SampleQueue');
-    //   sampleQueueProducer('SampleJob', {
-    //     firstName: "Nishant",
-    //     lastName: "Dongre",
-    //     DOB: "May 19, 2001"
-    //   });
+  console.log(`Server started at PORT:${serverConfig.PORT}`);
+  console.log(
+    `BullBoard dashboard running on: http://localhost:${serverConfig.PORT}/bulldashboard`
+  );
 
-    // Submission Queue Testing
+  (async () => {
+    try {
+      await cleanUpDockerContainers();
+      await initializePool();
 
-    // Cpp Code
-    // const userCode = `
-    //   class Solution {
-    //     public:
-    //       int square(int n) {
-    //           return n * n;
-    //       }
-    //   };
-    // `;
+      // Handle termination signals for cleanup
+      process.on("SIGINT", async () => {
+        await cleanUpDockerContainers();
 
-    // const code = `
-    //   #include<iostream>
-    //   #include<vector>
-    //   #include<stdio.h>
-    //   using namespace std;
+        process.exit();
+      });
 
-    //   ${userCode}
+      process.on("SIGTERM", async () => {
+        await cleanUpDockerContainers();
+        process.exit();
+      });
 
-    // int main() {
-    //   int n;
-    //   cin>>n;
+      // Start your server or application logic here
+      console.log("Application started successfully.");
+    } catch (error) {
+      console.error("Failed to start the application:", error);
+      process.exit(1);
+    }
+  })();
 
-    //   Solution *obj = new Solution();
+  // Sample Queue Testing
+  //  sampleWorker('SampleQueue');
+  //   sampleQueueProducer('SampleJob', {
+  //     firstName: "Nishant",
+  //     lastName: "Dongre",
+  //     DOB: "May 19, 2001"
+  //   });
 
-    //   for(int i=0;i<n;i++){
-    //       int num;
-    //       cin>>num;
-    //       cout<<obj->square(num)<<endl;
-    //   }
+  // Submission Queue Testing
 
-    //   return 0;
-    // }
-    // `;
+  // Cpp Code
+  // const userCode = `
+  //   class Solution {
+  //     public:
+  //       int square(int n) {
+  //           return n * n;
+  //       }
+  //   };
+  // `;
 
-    // const inputCase = `10 1 2 3 4 5 6 7 8 9 10`;
+  // const code = `
+  //   #include<iostream>
+  //   #include<vector>
+  //   #include<stdio.h>
+  //   using namespace std;
 
-    // submissionWorker(submission_queue);
-    // console.log("[index.ts] calling submissionQueueProducer");
-    // submissionQueueProducer("SubmissionJob", {
-    //     "1234": {
-    //         language: "CPP",
-    //         inputCase,
-    //         code,
-    //     },
-    // });
+  //   ${userCode}
 
-    // Java Code
-    //     const userCode = `
-    //       class Solution {
-    //           public int square(int n) {
-    //               return n * n;
-    //         }
-    //       }
-    //     `;
+  // int main() {
+  //   int n;
+  //   cin>>n;
 
-    //     const code = `
-    //         import java.util.Scanner;
+  //   Solution *obj = new Solution();
 
-    //         ${userCode}
+  //   for(int i=0;i<n;i++){
+  //       int num;
+  //       cin>>num;
+  //       cout<<obj->square(num)<<endl;
+  //   }
 
-    //         public class Main {
-    //             public static void main(String[] args) {
-    //                 Scanner scanner = new Scanner(System.in);
-    //                 int n = scanner.nextInt();
+  //   return 0;
+  // }
+  // `;
 
-    //                 Solution obj = new Solution();
+  // const inputCase = `10 1 2 3 4 5 6 7 8 9 10`;
 
-    //                 for (int i = 0; i < n; i++) {
-    //                     int num = scanner.nextInt();
-    //                     System.out.println(obj.square(num));
-    //                 }
+  // submissionWorker(submission_queue);
+  // console.log("[index.ts] calling submissionQueueProducer");
+  // submissionQueueProducer("SubmissionJob", {
+  //     "1234": {
+  //         language: "CPP",
+  //         inputCase,
+  //         code,
+  //     },
+  // });
 
-    //                 scanner.close();
-    //             }
-    //         }
-    //     `;
+  // Java Code
+  //     const userCode = `
+  //       class Solution {
+  //           public int square(int n) {
+  //               return n * n;
+  //         }
+  //       }
+  //     `;
 
-    //     const inputCase = `10 1 2 3 4 5 6 7 8 9 10`;
+  //     const code = `
+  //         import java.util.Scanner;
 
-    //     submissionWorker(submission_queue);
-    //     console.log("[index.ts] calling submissionQueueProducer");
-    //     submissionQueueProducer("SubmissionJob", {
-    //         "1234": {
-    //             language: "JAVA",
-    //             inputCase,
-    //             code,
-    //         },
-    //     });
+  //         ${userCode}
 
-    // Python Code
-    // const userCode =
-    //     "class Solution:\n    def square(self, n):\n        return n * n";
-    // const code = `${userCode}\ndef main():\n    n = int(input())\n    solObj = Solution()\n    for i in range(n):\n        num = int(input())\n        print(solObj.square(num))\n\nif __name__ == "__main__":\n    main()`;
+  //         public class Main {
+  //             public static void main(String[] args) {
+  //                 Scanner scanner = new Scanner(System.in);
+  //                 int n = scanner.nextInt();
 
-    // const inputCase = `10\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10`;
+  //                 Solution obj = new Solution();
 
-    // submissionWorker(submission_queue);
-    // console.log("[index.ts] calling submissionQueueProducer");
-    // submissionQueueProducer("SubmissionJob", {
-    //     "1234": {
-    //         language: "PYTHON",
-    //         inputCase,
-    //         code,
-    //     },
-    // });
+  //                 for (int i = 0; i < n; i++) {
+  //                     int num = scanner.nextInt();
+  //                     System.out.println(obj.square(num));
+  //                 }
 
-    submissionWorker(submission_queue);
+  //                 scanner.close();
+  //             }
+  //         }
+  //     `;
+
+  //     const inputCase = `10 1 2 3 4 5 6 7 8 9 10`;
+
+  //     submissionWorker(submission_queue);
+  //     console.log("[index.ts] calling submissionQueueProducer");
+  //     submissionQueueProducer("SubmissionJob", {
+  //         "1234": {
+  //             language: "JAVA",
+  //             inputCase,
+  //             code,
+  //         },
+  //     });
+
+  // Python Code
+  // const userCode =
+  //     "class Solution:\n    def square(self, n):\n        return n * n";
+  // const code = `${userCode}\ndef main():\n    n = int(input())\n    solObj = Solution()\n    for i in range(n):\n        num = int(input())\n        print(solObj.square(num))\n\nif __name__ == "__main__":\n    main()`;
+
+  // const inputCase = `10\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10`;
+
+  // submissionWorker(submission_queue);
+  // console.log("[index.ts] calling submissionQueueProducer");
+  // submissionQueueProducer("SubmissionJob", {
+  //     "1234": {
+  //         language: "PYTHON",
+  //         inputCase,
+  //         code,
+  //     },
+  // });
+
+  submissionWorker(submission_queue);
 });
