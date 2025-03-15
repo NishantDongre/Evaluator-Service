@@ -18,10 +18,10 @@ class JavaExecutor implements CodeExecutorStrategy {
 
     try {
       // Compile the code inside the running container
-      const compileCommand = `echo '${code.replace(
-        /'/g,
-        `'\\"`
-      )}' > Main.java && javac Main.java`;
+      const compileCommand = `printf '%s' '${code
+        .replace(/\\/g, '\\\\') // Escape backslashes
+        .replace(/'/g, "'\\''") // Properly escape single quotes
+    }' > Main.java && javac Main.java`;
       // console.log("[JavaExecutor.ts] compileCommand:", compileCommand);
       console.log("[JavaExecutor.ts] Below is Java Code compile Time");
       const compileOutput = await this.executeCommandInContainer(
@@ -51,10 +51,10 @@ class JavaExecutor implements CodeExecutorStrategy {
 
       // Execute the compiled code for each test case
       for (const { input, output } of testCases) {
-        const executeCommand = `echo '${input.replace(
-          /'/g,
-          `'\\"`
-        )}' | java Main`;
+        const executeCommand = `echo '${input
+          .replace(/\\/g, '\\\\') // Escape backslashes
+          .replace(/'/g, "'\\''") // Properly escape single quotes
+      }' | java Main`;
         // console.log("[JavaExecutor.ts] executeCommand: ", executeCommand);
 
         const runOutput = await this.executeCommandInContainer(

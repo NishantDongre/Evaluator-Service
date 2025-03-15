@@ -18,10 +18,10 @@ class CppExecutor implements CodeExecutorStrategy {
 
     try {
       // Compile the code inside the running container
-      const compileCommand = `echo '${code.replace(
-        /'/g,
-        `'\\"`
-      )}' > main.cpp && g++ main.cpp -o main`;
+      const compileCommand = `printf '%s' '${code
+        .replace(/\\/g, '\\\\') // Escape backslashes
+        .replace(/'/g, "'\\''") // Properly escape single quotes
+      }' > main.cpp && g++ main.cpp -o main`;      
       // console.log("[CppExecutor.ts] compileCommand:", compileCommand);
       console.log("[CppExecutor.ts] Below is Cpp Code compile Time");
       const compileOutput = await this.executeCommandInContainer(
@@ -31,7 +31,7 @@ class CppExecutor implements CodeExecutorStrategy {
       ); // give 20 sec to compile the code
 
       console.log(
-        "[CppExecutor.ts] compileOutput Status: *********************************************************************************************",
+        "[CppExecutor.ts] compile code Output Status: ",
         compileOutput
       );
 
@@ -51,7 +51,10 @@ class CppExecutor implements CodeExecutorStrategy {
 
       // Execute the compiled code for each test case
       for (const { input, output } of testCases) {
-        const executeCommand = `echo '${input.replace(/'/g, `'\\"`)}' | ./main`;
+        const executeCommand = `printf '%s' '${input
+          .replace(/\\/g, '\\\\') // Escape backslashes
+          .replace(/'/g, "'\\''") // Properly escape single quotes
+        }' | ./main`;
         // console.log("[CppExecutor.ts] executeCommand: ", executeCommand);
 
         const runOutput = await this.executeCommandInContainer(

@@ -19,7 +19,10 @@ class PythonExecutor implements CodeExecutorStrategy {
 
     try {
       // Compile the code inside the running container
-      const compileCommand = `echo '${code.replace(/'/g, "'\\''")}' > test.py`;
+      const compileCommand = `printf '%s' '${code
+        .replace(/\\/g, '\\\\') // Escape backslashes
+        .replace(/'/g, "'\\''") // Properly escape single quotes
+      }' > test.py`;
       //   console.log("[PythonExecutor.ts] compileCommand:", compileCommand);
       console.log("[PythonExecutor.ts] Below is Python Code compile Time");
       const compileOutput = await this.executeCommandInContainer(
@@ -50,7 +53,8 @@ class PythonExecutor implements CodeExecutorStrategy {
       // Execute the compiled code for each test case
       for (const { input, output } of testCases) {
         const executeCommand = `echo '${input
-          .replace(/'/g, "'\\''")
+          .replace(/\\/g, '\\\\') // Escape backslashes
+          .replace(/'/g, "'\\''") // Properly escape single quotes
           .replace(/ /g, "\n")}' | python3 test.py`;
         // console.log("[PythonExecutor.ts] executeCommand:", executeCommand);
 
